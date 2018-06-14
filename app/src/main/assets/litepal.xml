@@ -1,0 +1,9 @@
+<litepal>
+    <dbname value="fathed_weather"/>
+    <version value="1"/>
+    <list>
+        <mapping class="com.feathedweather.android.db.Province"/>
+        <mapping class="com.feathedweather.android.db.City"/>
+        <mapping class="com.feathedweather.android.db.County"/>
+    </list>
+</litepal>
