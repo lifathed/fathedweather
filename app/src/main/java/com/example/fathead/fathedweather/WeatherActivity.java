@@ -5,10 +5,14 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -40,6 +44,10 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingPicImg;
+    public SwipeRefreshLayout swipeRefresh;
+    private String mWeatherId;
+    public DrawerLayout drawerLayout;
+    private Button navButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +66,11 @@ public class WeatherActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_weather);
         //初始化各控件
+        drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
+        navButton=(Button)findViewById(R.id.nav_button);
+        swipeRefresh=(SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+        //设置下拉刷新进度条的颜色
         bingPicImg=(ImageView)findViewById(R.id.bing_pic_img);
         weatherLayout=(ScrollView) findViewById(R.id.weather_layout);
         titleCity=(TextView) findViewById(R.id.title_city);
@@ -78,14 +91,28 @@ public class WeatherActivity extends AppCompatActivity {
         if (weatherString!=null){
             //有缓存直接解析天气数据
             Weather weather= Utility.handleWeatherResponse(weatherString);
+            mWeatherId=weather.basic.weatherId;
             showWeatherInfo(weather);
         }else {
             //无缓存到服务器查询数据
-            String weatherId=getIntent().getStringExtra("weather_id");
+            mWeatherId=getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             //因为向服务器请求数据，此时页面为空，所以将Scrollview隐藏起来，不然看起来有点奇怪
-            requestWeather(weatherId);
+            requestWeather( mWeatherId);
         }
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
+            //设置下拉刷新监听器
+            @Override
+            public void onRefresh(){
+                requestWeather(mWeatherId);
+            }
+        });
+        navButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
         String bingPic=prefs.getString("bing_pic",null);
         if (bingPic!=null){
             //判断SharedPreferences是否有缓存图片
@@ -100,7 +127,7 @@ public class WeatherActivity extends AppCompatActivity {
     *根据天气id请求城市天气信息
      */
 
-    private void requestWeather(final String weatherId) {
+   public void requestWeather(final String weatherId) {
         String weatherUrl="http://guolin.tech/api/weather?cityid="+weatherId+"&key=87cf23db9eea4f58aa3d702fd0b7ba56";
         //使用天气id和申请好的APIKey拼装一个接口地址
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
@@ -122,10 +149,13 @@ public class WeatherActivity extends AppCompatActivity {
                             //通过SharedPreferences.Editor接口的putXxx（）方法存放key-value
                             editor.apply();
                             //实现shared存储（数据保存）
+                            mWeatherId=weather.basic.weatherId;
                             showWeatherInfo(weather);
                         }else {
                             Toast.makeText(WeatherActivity.this,"获取天气信息失败",Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefresh.setRefreshing(false);
+                        //表示刷新事件结束，隐藏刷新进度条
                     }
                 });
                 loadBingPic();
@@ -137,6 +167,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(WeatherActivity.this,"获取天气信息失败",Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
 
