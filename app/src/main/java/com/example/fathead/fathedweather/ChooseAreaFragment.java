@@ -1,4 +1,5 @@
 package com.example.fathead.fathedweather;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -31,7 +32,7 @@ import okhttp3.Callback;
  * Created by fathead on 2018/6/14.
  */
 
-//fragment（碎片）是不能直接显示在界面的，需要添加到活动（activity_main）
+//注意fragment（碎片）是不能直接显示在界面的，需要添加到活动（activity_main）
 
 public class ChooseAreaFragment extends Fragment{
     //遍历省市县数据的碎片
@@ -78,6 +79,13 @@ public class ChooseAreaFragment extends Fragment{
                 }else if (currentLevel==LEVEL_CITY){
                     selectedCity=cityList.get(position);
                     queryCounties();
+                }else if (currentLevel==LEVEL_COUNTY){
+                    //判断如果此时点击的是县这个级别，则启动weatheractivity，并把当前选中县的天气id传递过去
+                    String weatherId=countyList.get(position).getWeatherId();
+                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
+                    intent.putExtra("weather_id",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });

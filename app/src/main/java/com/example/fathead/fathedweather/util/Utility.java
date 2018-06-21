@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import com.example.fathead.fathedweather.db.City;
 import com.example.fathead.fathedweather.db.County;
 import com.example.fathead.fathedweather.db.Province;
+import com.example.fathead.fathedweather.gson.Weather;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -99,5 +101,22 @@ public class Utility {
             }
         }
         return false;
+    }
+    /**
+     * 将返回的json数据解析成weather实体类
+     */
+    public static Weather handleWeatherResponse(String response){
+        try {
+            JSONObject jsonObject=new JSONObject(response);
+            //将服务器返回的数据传入到JSONObject
+            JSONArray jsonArray=jsonObject.getJSONArray("HeWeather");
+            //JSONArray，是由JSONObject构成的数组
+            String weatherContent=jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent,Weather.class);
+            //调用fromJson（）方法将JSON数据转换成weather对象
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }
