@@ -1,6 +1,7 @@
 package com.example.fathead.fathedweather;
 
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.fathead.fathedweather.gson.Forecast;
 import com.example.fathead.fathedweather.gson.Weather;
+import com.example.fathead.fathedweather.service.AutoUpdateService;
 import com.example.fathead.fathedweather.util.HttpUtil;
 import com.example.fathead.fathedweather.util.Utility;
 
@@ -216,6 +218,9 @@ public class WeatherActivity extends AppCompatActivity {
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
         //将Scrollview重新设成可见
+        Intent intent=new Intent(this, AutoUpdateService.class);
+        startService(intent);
+        //激活AutoUpdateService
 
     }
     /*
